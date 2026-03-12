@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SPM — Software Project Management Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:        #f5f3ef;
+  --surface:   #ffffff;
+  --surface2:  #f0ede7;
+  --navy:      #0f1f3d;
+  --navy2:     #1a3160;
+  --navy3:     #2a4a8a;
+  --coral:     #e05c3a;
+  --coral2:    #f07a5a;
+  --coral-bg:  rgba(224,92,58,0.08);
+  --teal:      #1a7a6e;
+  --teal-bg:   rgba(26,122,110,0.08);
+  --text:      #1a1a2e;
+  --muted:     #6b6a7a;
+  --muted2:    #9a99a8;
+  --border:    #dedad4;
+  --border2:   #ccc9c2;
+  --mark:      rgba(224,92,58,0.15);
+  --sidebar-w: 290px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  overflow-x: hidden;
+}
+
+/* ── Subtle grid background ── */
+body::after {
+  content:'';
+  position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(15,31,61,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,31,61,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ── Reading line ── */
+#rline {
+  position:fixed; top:0; left:0; height:3px;
+  background: linear-gradient(90deg, var(--coral), var(--navy));
+  z-index:600; width:0%;
+  transition: width 0.1s linear;
+}
+
+/* ══════════════ SIDEBAR ══════════════ */
+.sidebar {
+  position:fixed; left:0; top:0; bottom:0;
+  width: var(--sidebar-w);
+  background: var(--navy);
+  display:flex; flex-direction:column;
+  z-index:100;
+  overflow:hidden;
+  transition: transform 0.35s cubic-bezier(.77,0,.175,1);
+}
+
+/* diagonal stripe decoration */
+.sidebar::before {
+  content:'';
+  position:absolute; top:0; right:0;
+  width:3px; height:100%;
+  background: repeating-linear-gradient(
+    180deg,
+    var(--coral) 0px, var(--coral) 6px,
+    transparent 6px, transparent 14px
+  );
+  opacity:0.5;
+}
+
+.sb-top {
+  padding:28px 24px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;
+}
+
+.sb-brand { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.sb-icon {
+  width:40px; height:40px;
+  background: var(--coral);
+  display:flex; align-items:center; justify-content:center;
+  border-radius:4px;
+  flex-shrink:0;
+}
+.sb-icon span {
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px; font-weight:700; color:#fff;
+  line-height:1;
+}
+.sb-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px; font-weight:700; color:#fff;
+  line-height:1.2;
+}
+.sb-code {
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px; color:rgba(255,255,255,0.4);
+  letter-spacing:0.08em; margin-top:2px;
+}
+
+/* progress */
+.sb-prog-label {
+  font-size:9.5px; font-family:'JetBrains Mono',monospace;
+  color:rgba(255,255,255,0.35); letter-spacing:0.06em;
+  display:flex; justify-content:space-between; margin-bottom:6px;
+}
+.sb-prog-track {
+  height:2px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;
+}
+.sb-prog-fill {
+  height:100%;
+  background: linear-gradient(90deg, var(--coral), var(--coral2));
+  width:0%; border-radius:2px; transition:width 0.3s ease;
+}
+
+/* search */
+.sb-search {
+  padding:12px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.sb-search input {
+  width:100%; background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:5px; padding:7px 12px;
+  color:#fff; font-family:'Outfit',sans-serif;
+  font-size:12px; outline:none;
+  transition:border-color 0.2s;
+}
+.sb-search input::placeholder { color:rgba(255,255,255,0.25); }
+.sb-search input:focus { border-color:var(--coral); }
+
+/* nav */
+.sb-nav { flex:1; overflow-y:auto; padding:10px 0; scrollbar-width:thin; scrollbar-color:rgba(255,255,255,0.1) transparent; }
+.sb-nav::-webkit-scrollbar { width:3px; }
+.sb-nav::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+
+.sb-section {
+  font-size:9px; letter-spacing:0.14em;
+  color:rgba(255,255,255,0.3);
+  font-family:'JetBrains Mono',monospace; text-transform:uppercase;
+  padding:14px 24px 5px;
+}
+
+.sb-link {
+  display:flex; align-items:center; gap:10px;
+  padding:8px 24px; text-decoration:none;
+  color:rgba(255,255,255,0.5);
+  font-size:12px; font-weight:400;
+  transition:all 0.2s ease;
+  border-left:2px solid transparent;
+  cursor:pointer;
+}
+.sb-link:hover { color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.04); }
+.sb-link.active {
+  color:#fff; background:rgba(224,92,58,0.15);
+  border-left-color: var(--coral);
+}
+.sb-num {
+  font-family:'JetBrains Mono',monospace;
+  font-size:9.5px; width:20px; flex-shrink:0; opacity:0.6;
+}
+.sb-co {
+  margin-left:auto; font-size:8.5px;
+  font-family:'JetBrains Mono',monospace;
+  background:rgba(224,92,58,0.2); color:var(--coral2);
+  padding:2px 6px; border-radius:2px; flex-shrink:0;
+}
+
+.sb-footer {
+  padding:16px 24px;
+  border-top:1px solid rgba(255,255,255,0.07);
+  flex-shrink:0;
+}
+.sb-chips { display:flex; gap:6px; flex-wrap:wrap; }
+.sb-chip {
+  font-size:9.5px; font-family:'JetBrains Mono',monospace;
+  border:1px solid rgba(255,255,255,0.12);
+  color:rgba(255,255,255,0.35);
+  padding:2px 8px; border-radius:2px;
+}
+
+/* mobile toggle */
+.mob-toggle {
+  display:none; position:fixed; top:16px; left:16px; z-index:200;
+  background:var(--navy); border:none; color:#fff;
+  width:42px; height:42px; border-radius:6px;
+  cursor:pointer; align-items:center; justify-content:center;
+  font-size:18px; box-shadow:0 4px 12px rgba(15,31,61,0.3);
+}
+
+/* ══════════════ MAIN ══════════════ */
+.main {
+  margin-left: var(--sidebar-w);
+  position:relative; z-index:1;
+  min-height:100vh;
+}
+
+/* ── HERO ── */
+.hero {
+  background: var(--navy);
+  padding:72px 64px 56px;
+  position:relative; overflow:hidden;
+}
+
+/* decorative rings */
+.hero::before {
+  content:'';
+  position:absolute; right:-80px; bottom:-120px;
+  width:400px; height:400px;
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:50%;
+}
+.hero::after {
+  content:'';
+  position:absolute; right:60px; bottom:-60px;
+  width:240px; height:240px;
+  border:1px solid rgba(224,92,58,0.15);
+  border-radius:50%;
+}
+
+.hero-tag {
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px; color:var(--coral2);
+  letter-spacing:0.14em; text-transform:uppercase;
+  margin-bottom:18px;
+  display:flex; align-items:center; gap:10px;
+}
+.hero-tag::before {
+  content:''; width:20px; height:2px; background:var(--coral);
+}
+
+.hero-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size: clamp(36px,5vw,66px);
+  font-weight:700; line-height:1.08; color:#fff;
+  margin-bottom:8px; letter-spacing:-0.01em;
+}
+.hero-title em { font-style:italic; color:var(--coral2); }
+
+.hero-sub {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(18px,2.5vw,26px);
+  color:rgba(255,255,255,0.45); font-weight:400;
+  margin-bottom:28px; font-style:italic;
+}
+
+.hero-desc {
+  font-size:14px; color:rgba(255,255,255,0.5);
+  max-width:520px; line-height:1.8; margin-bottom:36px;
+}
+
+.hero-stats {
+  display:flex; gap:40px; flex-wrap:wrap;
+  position:relative; z-index:2;
+}
+.stat { display:flex; flex-direction:column; }
+.stat-n {
+  font-family:'Cormorant Garamond',serif;
+  font-size:38px; font-weight:700; color:var(--coral2); line-height:1;
+}
+.stat-l {
+  font-size:10px; color:rgba(255,255,255,0.35);
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:0.08em; margin-top:4px; text-transform:uppercase;
+}
+
+/* ── CONTENT ── */
+.content { padding:0 64px 100px; }
+
+/* ── Question Block ── */
+.qblock {
+  padding:56px 0;
+  border-bottom:1px solid var(--border);
+  opacity:0; transform:translateY(20px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.qblock.vis { opacity:1; transform:translateY(0); }
+.qblock:last-child { border-bottom:none; }
+
+.q-header { display:flex; align-items:flex-start; gap:20px; margin-bottom:32px; }
+
+.q-badge {
+  width:56px; height:56px; border-radius:6px;
+  background: var(--navy); display:flex;
+  align-items:center; justify-content:center; flex-shrink:0;
+  position:relative; overflow:hidden;
+}
+.q-badge::after {
+  content:''; position:absolute;
+  bottom:0; right:0; width:100%; height:3px;
+  background: var(--coral);
+}
+.q-badge span {
+  font-family:'Cormorant Garamond',serif;
+  font-size:22px; font-weight:700; color:#fff;
+}
+
+.q-meta { flex:1; }
+.q-num {
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  color:var(--muted2); letter-spacing:0.1em; text-transform:uppercase;
+  margin-bottom:7px;
+}
+.q-title {
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(20px,2.5vw,28px); font-weight:700;
+  color:var(--navy); line-height:1.25; margin-bottom:12px;
+}
+.q-tags { display:flex; gap:8px; flex-wrap:wrap; }
+.tag {
+  font-size:9.5px; font-family:'JetBrains Mono',monospace;
+  padding:3px 10px; border-radius:3px;
+  background:rgba(15,31,61,0.07); color:var(--navy3);
+  border:1px solid rgba(15,31,61,0.12);
+}
+.tag.co {
+  background:var(--coral-bg); color:var(--coral);
+  border-color:rgba(224,92,58,0.2);
+}
+.tag.bt {
+  background:var(--teal-bg); color:var(--teal);
+  border-color:rgba(26,122,110,0.2);
+}
+
+/* ── Section heads ── */
+.sh {
+  font-family:'Cormorant Garamond',serif;
+  font-size:19px; font-weight:700;
+  color:var(--navy); margin:30px 0 12px;
+  display:flex; align-items:center; gap:12px;
+  padding-bottom:8px;
+  border-bottom:2px solid var(--border);
+}
+.sh span { color:var(--coral); margin-right:4px; }
+
+.ssub {
+  font-size:13.5px; font-weight:600; color:var(--navy);
+  margin:18px 0 7px; padding-left:14px;
+  border-left:3px solid var(--coral);
+  font-family:'Outfit',sans-serif;
+}
+
+/* ── Body text ── */
+p.bt {
+  font-size:14.5px; color:#2e2e3e; line-height:1.85;
+  margin-bottom:13px; max-width:800px;
+}
+p.bt strong { color:var(--navy); font-weight:600; }
+p.bt em { color:var(--coral); font-style:italic; }
+
+/* ── Definition / callout boxes ── */
+.def {
+  background:#fff; border-left:3px solid var(--navy);
+  border-radius:0 6px 6px 0;
+  padding:14px 18px; margin:14px 0;
+  font-size:14px; color:var(--text); line-height:1.8;
+  max-width:800px; box-shadow:0 2px 8px rgba(15,31,61,0.06);
+}
+.def strong { color:var(--navy); }
+
+.callout {
+  display:flex; gap:14px; align-items:flex-start;
+  background:var(--coral-bg); border:1px solid rgba(224,92,58,0.2);
+  border-radius:7px; padding:14px 16px; margin:14px 0;
+  max-width:800px;
+}
+.callout-icon { font-size:16px; flex-shrink:0; margin-top:2px; }
+.callout p { font-size:13.5px; color:var(--text); line-height:1.75; }
+
+.note-box {
+  display:flex; gap:14px; align-items:flex-start;
+  background:var(--teal-bg); border:1px solid rgba(26,122,110,0.2);
+  border-radius:7px; padding:14px 16px; margin:14px 0;
+  max-width:800px;
+}
+.note-box p { font-size:13.5px; color:var(--text); line-height:1.75; }
+
+/* ── Lists ── */
+ul.nl { list-style:none; max-width:800px; margin:10px 0; }
+ul.nl li {
+  display:flex; gap:10px; align-items:flex-start;
+  font-size:14px; color:#2e2e3e; padding:6px 0;
+  border-bottom:1px solid var(--border);
+}
+ul.nl li:last-child { border-bottom:none; }
+ul.nl li::before { content:'→'; color:var(--coral); font-size:12px; flex-shrink:0; margin-top:4px; font-weight:600; }
+
+/* ── Info box ── */
+.ibox {
+  background:#fff; border:1px solid var(--border);
+  border-radius:8px; overflow:hidden;
+  margin:16px 0; max-width:800px;
+  box-shadow:0 2px 12px rgba(15,31,61,0.05);
+}
+.ibox-title {
+  background:var(--navy); padding:9px 16px;
+  font-size:11px; font-family:'JetBrains Mono',monospace;
+  color:rgba(255,255,255,0.85); letter-spacing:0.05em;
+}
+.ibox-body { padding:14px 16px; }
+.ibox-body p {
+  font-size:13.5px; color:#3a3a4e; padding:5px 0;
+  border-bottom:1px solid var(--border);
+}
+.ibox-body p:last-child { border-bottom:none; }
+
+/* ── Tables ── */
+.tw { overflow-x:auto; margin:16px 0; max-width:800px; border-radius:8px; border:1px solid var(--border); box-shadow:0 2px 10px rgba(15,31,61,0.05); }
+table.nt { width:100%; border-collapse:collapse; font-size:13px; }
+table.nt thead tr { background:var(--navy); color:#fff; }
+table.nt thead th { padding:10px 14px; text-align:left; font-family:'JetBrains Mono',monospace; font-weight:400; font-size:10.5px; letter-spacing:0.05em; }
+table.nt tbody tr:nth-child(even) { background:#faf9f7; }
+table.nt tbody tr:nth-child(odd) { background:#fff; }
+table.nt tbody tr:hover { background:rgba(224,92,58,0.04); }
+table.nt td { padding:9px 14px; color:#3a3a4e; border-top:1px solid var(--border); vertical-align:top; line-height:1.6; }
+
+/* ── Two col ── */
+.tcol { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:16px 0; max-width:800px; }
+.ccard {
+  background:#fff; border:1px solid var(--border);
+  border-radius:7px; padding:16px;
+  border-top:3px solid var(--navy);
+  box-shadow:0 2px 8px rgba(15,31,61,0.04);
+}
+.ccard h4 {
+  font-family:'JetBrains Mono',monospace; font-size:10px;
+  color:var(--coral); letter-spacing:0.1em; text-transform:uppercase;
+  margin-bottom:8px;
+}
+.ccard p { font-size:13px; color:var(--muted); line-height:1.7; }
+
+/* three col */
+.three-col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin:16px 0; max-width:800px; }
+.phase-card {
+  background:#fff; border:1px solid var(--border);
+  border-radius:7px; padding:14px;
+  position:relative; overflow:hidden;
+  box-shadow:0 2px 8px rgba(15,31,61,0.04);
+}
+.phase-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background: var(--coral);
+}
+.phase-card h4 {
+  font-family:'Cormorant Garamond',serif; font-size:15px; font-weight:700;
+  color:var(--navy); margin-bottom:6px;
+}
+.phase-card .ph-num {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  color:var(--muted2); text-transform:uppercase; letter-spacing:0.1em;
+  margin-bottom:6px;
+}
+.phase-card p { font-size:12.5px; color:var(--muted); line-height:1.6; }
+
+/* ── schema pills ── */
+.pills { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; max-width:800px; }
+.pill {
+  background:#fff; border:1px solid var(--border);
+  border-radius:5px; padding:7px 14px;
+  font-family:'JetBrains Mono',monospace; font-size:12px;
+  color:var(--navy); box-shadow:0 1px 4px rgba(15,31,61,0.07);
+}
+.pill .k { color:var(--coral); font-weight:500; }
+
+/* scroll to top */
+#stt {
+  position:fixed; bottom:32px; right:32px;
+  width:44px; height:44px; border-radius:6px;
+  background:var(--navy); color:#fff;
+  border:none; cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 4px 16px rgba(15,31,61,0.3);
+  opacity:0; transform:translateY(8px);
+  transition:all 0.3s ease; z-index:200;
+}
+#stt.show { opacity:1; transform:translateY(0); }
+#stt:hover { background:var(--coral); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+.hero-tag  { animation:fadeUp 0.5s ease 0.1s both; }
+.hero-title{ animation:fadeUp 0.5s ease 0.2s both; }
+.hero-sub  { animation:fadeUp 0.5s ease 0.25s both; }
+.hero-desc { animation:fadeUp 0.5s ease 0.3s both; }
+.hero-stats{ animation:fadeUp 0.5s ease 0.4s both; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:920px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .mob-toggle{display:flex;}
+  .hero{padding:72px 24px 48px;}
+  .content{padding:0 24px 80px;}
+  .tcol,.three-col{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div id="rline"></div>
+
+<button class="mob-toggle" id="togBtn" onclick="toggleSb()">☰</button>
+
+<!-- ══════ SIDEBAR ══════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-top">
+    <div class="sb-brand">
+      <div class="sb-icon"><span>S</span></div>
+      <div>
+        <div class="sb-title">SPM Notes</div>
+        <div class="sb-code">MCA-433 · 2025-26</div>
+      </div>
+    </div>
+    <div class="sb-prog-label">
+      <span>Reading Progress</span>
+      <span id="pct">0%</span>
+    </div>
+    <div class="sb-prog-track"><div class="sb-prog-fill" id="pf"></div></div>
+  </div>
+
+  <div class="sb-search">
+    <input placeholder="Search topics…" oninput="filterNav(this.value)"/>
+  </div>
+
+  <nav class="sb-nav" id="navList">
+    <div class="sb-section">Unit 1 — Introduction &amp; Technology Context</div>
+    <a class="sb-link" href="#q1" onclick="closeSb()"><span class="sb-num">01</span>Project Life Cycle Phases<span class="sb-co">CO1</span></a>
+    <a class="sb-link" href="#q2" onclick="closeSb()"><span class="sb-num">02</span>Role of Project Manager<span class="sb-co">CO1</span></a>
+    <a class="sb-link" href="#q3" onclick="closeSb()"><span class="sb-num">03</span>Project Management &amp; Importance<span class="sb-co">CO1</span></a>
+    <a class="sb-link" href="#q4" onclick="closeSb()"><span class="sb-num">04</span>Stakeholder Management<span class="sb-co">CO1</span></a>
+    <a class="sb-link" href="#q5" onclick="closeSb()"><span class="sb-num">05</span>PM Profession &amp; Importance<span class="sb-co">CO1</span></a>
+    <a class="sb-link" href="#q6" onclick="closeSb()"><span class="sb-num">06</span>System View of PM<span class="sb-co">CO1</span></a>
+    <a class="sb-link" href="#q7" onclick="closeSb()"><span class="sb-num">07</span>IT Projects Context<span class="sb-co">CO1</span></a>
+    <div class="sb-section">Unit 2 — Scheduling &amp; Management</div>
+    <a class="sb-link" href="#q8" onclick="closeSb()"><span class="sb-num">08</span>Project Metrics<span class="sb-co">CO2</span></a>
+    <a class="sb-link" href="#q9" onclick="closeSb()"><span class="sb-num">09</span>Project Schedule<span class="sb-co">CO2</span></a>
+    <a class="sb-link" href="#q10" onclick="closeSb()"><span class="sb-num">10</span>PM Software Tools<span class="sb-co">CO2</span></a>
+    <a class="sb-link" href="#q11" onclick="closeSb()"><span class="sb-num">11</span>Monitoring &amp; Controlling<span class="sb-co">CO2</span></a>
+    <a class="sb-link" href="#q12" onclick="closeSb()"><span class="sb-num">12</span>Information Distribution<span class="sb-co">CO2</span></a>
+    <a class="sb-link" href="#q13" onclick="closeSb()"><span class="sb-num">13</span>Project Budget Development<span class="sb-co">CO2</span></a>
+    <a class="sb-link" href="#q14" onclick="closeSb()"><span class="sb-num">14</span>Communication Plan<span class="sb-co">CO2</span></a>
+    <a class="sb-link" href="#q15" onclick="closeSb()"><span class="sb-num">15</span>Develop &amp; Finalize Schedule<span class="sb-co">CO2</span></a>
+    <div class="sb-section">Unit 3 — Risk Management</div>
+    <a class="sb-link" href="#q16" onclick="closeSb()"><span class="sb-num">16</span>Sources of Risk in IT Projects<span class="sb-co">CO3</span></a>
+    <a class="sb-link" href="#q17" onclick="closeSb()"><span class="sb-num">17</span>Risk Management Planning<span class="sb-co">CO3</span></a>
+  </nav>
+
+  <div class="sb-footer">
+    <div class="sb-chips">
+      <span class="sb-chip">Unit 1</span>
+      <span class="sb-chip">Unit 2</span>
+      <span class="sb-chip">Unit 3</span>
+      <span class="sb-chip">MCA</span>
+      <span class="sb-chip">IMRD</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ══════ MAIN ══════ -->
+<main class="main">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">Software Project Management</div>
+  <h1 class="hero-title">MCA-433<br/><em>Study Notes</em></h1>
+  <p class="hero-sub">Unit 1 · Unit 2 · Unit 3 — Complete Coverage</p>
+  <p class="hero-desc">All question bank topics answered in detail — Project Life Cycles, Scheduling, Risk Management, Stakeholders, Budgets, and more. Exam-ready.</p>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-n">17</span><span class="stat-l">Questions</span></div>
+    <div class="stat"><span class="stat-n">3</span><span class="stat-l">Units</span></div>
+    <div class="stat"><span class="stat-n">3</span><span class="stat-l">COs Covered</span></div>
+    <div class="stat"><span class="stat-n">∞</span><span class="stat-l">Vibes</span></div>
+  </div>
+</section>
+
+<div class="content">
+
+<!-- ══════════ Q1 ══════════ -->
+<section class="qblock" id="q1">
+  <div class="q-header">
+    <div class="q-badge"><span>1</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 01 · CO1 · Understand (BT2)</div>
+      <h2 class="q-title">Explain the Different Phases of the Project Life Cycle.</h2>
+      <div class="q-tags"><span class="tag">Project Life Cycle</span><span class="tag co">CO1</span><span class="tag bt">BT2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>Definition</div>
+  <div class="def">A <strong>Project Life Cycle (PLC)</strong> is the series of phases that a project passes through from its initiation to its closure. It provides a structured framework that guides the project team from the beginning to the end, ensuring that all deliverables are produced and objectives are met systematically.</div>
+
+  <div class="sh"><span>◆</span>Phases of Project Life Cycle</div>
+
+  <div class="ssub">Phase 1 — Initiation / Concept Phase</div>
+  <p class="bt">This is the <strong>starting phase</strong> where the project idea is born. The project's feasibility is evaluated, objectives are defined, and a decision is made whether to proceed. A <em>Project Charter</em> is created authorising the project.</p>
+  <ul class="nl">
+    <li>Define project purpose, goals, and objectives</li>
+    <li>Identify key stakeholders and project sponsor</li>
+    <li>Conduct feasibility study (technical, financial, operational)</li>
+    <li>Create the Project Charter document</li>
+    <li>Obtain approval to proceed</li>
+  </ul>
+
+  <div class="ssub">Phase 2 — Planning Phase</div>
+  <p class="bt">The <strong>most critical phase</strong> of the project life cycle. Detailed plans are created covering scope, schedule, budget, quality, communication, risk, and resources. The project plan serves as the roadmap for execution.</p>
+  <ul class="nl">
+    <li>Define project scope and Work Breakdown Structure (WBS)</li>
+    <li>Develop project schedule using Gantt charts, CPM, PERT</li>
+    <li>Estimate costs and develop project budget</li>
+    <li>Identify and plan for project risks</li>
+    <li>Create communication and stakeholder management plans</li>
+    <li>Resource allocation and procurement planning</li>
+  </ul>
+
+  <div class="ssub">Phase 3 — Execution Phase</div>
+  <p class="bt">The <strong>doing phase</strong> — actual project work is carried out. The project manager coordinates resources, manages the team, and ensures work is done according to the project plan. This is where the product or service is built.</p>
+  <ul class="nl">
+    <li>Assign tasks and manage the project team</li>
+    <li>Execute activities as per the project schedule</li>
+    <li>Manage quality assurance processes</li>
+    <li>Distribute information to stakeholders</li>
+    <li>Manage vendor and procurement activities</li>
+  </ul>
+
+  <div class="ssub">Phase 4 — Monitoring &amp; Controlling Phase</div>
+  <p class="bt">This phase <strong>runs parallel to execution</strong>. The project manager tracks, reviews, and regulates the progress and performance of the project. Changes are managed and corrective actions are taken when needed.</p>
+  <ul class="nl">
+    <li>Track project performance against baselines (scope, time, cost)</li>
+    <li>Manage changes through a formal change control process</li>
+    <li>Report project status to stakeholders</li>
+    <li>Identify and address deviations from the plan</li>
+    <li>Monitor and control risks</li>
+  </ul>
+
+  <div class="ssub">Phase 5 — Closure Phase</div>
+  <p class="bt">The <strong>final phase</strong> where the project is formally completed and handed over. All activities are wrapped up, lessons learned are documented, and team members are released.</p>
+  <ul class="nl">
+    <li>Obtain formal acceptance from the customer/client</li>
+    <li>Archive all project documents</li>
+    <li>Conduct post-project review and lessons learned session</li>
+    <li>Release project resources and close contracts</li>
+    <li>Celebrate project success with the team</li>
+  </ul>
+
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Phase</th><th>Key Output</th><th>Key Activity</th></tr></thead>
+      <tbody>
+        <tr><td>Initiation</td><td>Project Charter</td><td>Feasibility study, approval</td></tr>
+        <tr><td>Planning</td><td>Project Management Plan</td><td>WBS, scheduling, budgeting</td></tr>
+        <tr><td>Execution</td><td>Deliverables</td><td>Build, code, develop</td></tr>
+        <tr><td>Monitoring &amp; Control</td><td>Performance Reports</td><td>Track, measure, correct</td></tr>
+        <tr><td>Closure</td><td>Project Closure Report</td><td>Handover, lessons learned</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ Q2 ══════════ -->
+<section class="qblock" id="q2">
+  <div class="q-header">
+    <div class="q-badge"><span>2</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 02 · CO1 · Understand (BT2)</div>
+      <h2 class="q-title">Explain the Role of Project Manager in Detail.</h2>
+      <div class="q-tags"><span class="tag">Project Manager</span><span class="tag co">CO1</span><span class="tag bt">BT2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>Who is a Project Manager?</div>
+  <div class="def">A <strong>Project Manager (PM)</strong> is the person responsible for leading a project from its initiation to closure. The PM is accountable for the entire project scope, team management, stakeholder communication, risk management, and delivery of the project within time, budget, and quality constraints.</div>
+
+  <div class="sh"><span>◆</span>Key Roles &amp; Responsibilities</div>
+
+  <div class="ssub">1. Project Planning &amp; Scope Management</div>
+  <p class="bt">The PM defines the <strong>project scope</strong>, creates the Work Breakdown Structure (WBS), and develops detailed project plans including schedules, budgets, and resource plans. They ensure the project objectives are clearly defined and understood.</p>
+
+  <div class="ssub">2. Team Leadership &amp; Management</div>
+  <p class="bt">The PM <strong>builds, motivates, and manages the project team</strong>. They assign roles and responsibilities, resolve team conflicts, conduct performance reviews, and ensure a productive working environment. Strong interpersonal skills are essential here.</p>
+
+  <div class="ssub">3. Risk Management</div>
+  <p class="bt">The PM <strong>identifies, assesses, and mitigates risks</strong> throughout the project. They maintain a risk register, develop contingency plans, and regularly monitor potential threats to project success.</p>
+
+  <div class="ssub">4. Stakeholder Communication</div>
+  <p class="bt">The PM acts as the <strong>primary communicator</strong> between the project team and all stakeholders. They produce regular status reports, conduct meetings, manage expectations, and ensure stakeholders are informed and engaged at all times.</p>
+
+  <div class="ssub">5. Budget &amp; Cost Management</div>
+  <p class="bt">The PM <strong>estimates project costs, develops the budget</strong>, and controls expenditures throughout the project lifecycle. They use earned value management (EVM) techniques to track financial performance.</p>
+
+  <div class="ssub">6. Quality Management</div>
+  <p class="bt">The PM ensures the project meets <strong>defined quality standards</strong>. They establish quality assurance processes, conduct reviews, manage testing activities, and ensure deliverables meet specifications.</p>
+
+  <div class="ssub">7. Change Management</div>
+  <p class="bt">The PM manages the <strong>change control process</strong>, evaluating all proposed changes for their impact on scope, schedule, cost, and quality before approving or rejecting them.</p>
+
+  <div class="ssub">8. Problem Solving &amp; Decision Making</div>
+  <p class="bt">The PM resolves issues that arise during the project. They make <strong>timely decisions</strong> under pressure, escalate issues when appropriate, and keep the project moving forward.</p>
+
+  <div class="ibox">
+    <div class="ibox-title">Skills Required for a Project Manager</div>
+    <div class="ibox-body">
+      <p>▸ Technical Skills — understanding of project domain and tools</p>
+      <p>▸ Leadership — inspiring and guiding the team toward goals</p>
+      <p>▸ Communication — clear and effective verbal/written communication</p>
+      <p>▸ Negotiation — balancing competing stakeholder interests</p>
+      <p>▸ Risk Awareness — anticipating and preparing for potential issues</p>
+      <p>▸ Time Management — prioritising tasks and meeting deadlines</p>
+    </div>
+  </div>
+
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Area</th><th>PM Responsibility</th></tr></thead>
+      <tbody>
+        <tr><td>Scope</td><td>Define, verify, and control project scope</td></tr>
+        <tr><td>Time</td><td>Develop and maintain the project schedule</td></tr>
+        <tr><td>Cost</td><td>Estimate, budget, and control project costs</td></tr>
+        <tr><td>Quality</td><td>Plan, assure, and control quality</td></tr>
+        <tr><td>Human Resources</td><td>Acquire, develop, and manage the project team</td></tr>
+        <tr><td>Communications</td><td>Plan and manage all project communications</td></tr>
+        <tr><td>Risk</td><td>Identify, analyse, and respond to project risks</td></tr>
+        <tr><td>Procurement</td><td>Plan and manage purchases and contracts</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ Q3 ══════════ -->
+<section class="qblock" id="q3">
+  <div class="q-header">
+    <div class="q-badge"><span>3</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 03 · CO1 · Understand (BT2)</div>
+      <h2 class="q-title">Explain the Concept of Project Management and Its Importance in Software Projects.</h2>
+      <div class="q-tags"><span class="tag">Project Management</span><span class="tag co">CO1</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is Project Management?</div>
+  <div class="def"><strong>Project Management</strong> is the application of knowledge, skills, tools, and techniques to project activities in order to meet the project requirements. It involves planning, organising, directing, and controlling all aspects of a project to achieve its objectives within defined constraints of time, cost, and quality.</div>
+
+  <div class="sh"><span>◆</span>Core Knowledge Areas (PMBOK)</div>
+  <div class="three-col">
+    <div class="phase-card"><div class="ph-num">Area 1</div><h4>Scope Mgmt</h4><p>Define and control what is and isn't included in the project.</p></div>
+    <div class="phase-card"><div class="ph-num">Area 2</div><h4>Time Mgmt</h4><p>Plan and control the schedule to deliver on time.</p></div>
+    <div class="phase-card"><div class="ph-num">Area 3</div><h4>Cost Mgmt</h4><p>Estimate, budget, and control project finances.</p></div>
+    <div class="phase-card"><div class="ph-num">Area 4</div><h4>Quality Mgmt</h4><p>Ensure deliverables meet defined quality standards.</p></div>
+    <div class="phase-card"><div class="ph-num">Area 5</div><h4>Risk Mgmt</h4><p>Identify and respond to project uncertainties.</p></div>
+    <div class="phase-card"><div class="ph-num">Area 6</div><h4>Communication</h4><p>Plan and manage all stakeholder communications.</p></div>
+  </div>
+
+  <div class="sh"><span>◆</span>Importance of Project Management in Software Projects</div>
+
+  <div class="ssub">1. Clear Goal Definition</div>
+  <p class="bt">PM ensures that <strong>software requirements are clearly understood</strong> and documented. Without proper management, software projects often suffer from scope creep — the uncontrolled expansion of project scope.</p>
+
+  <div class="ssub">2. Efficient Resource Utilisation</div>
+  <p class="bt">Software projects involve expensive human resources — developers, testers, analysts. PM ensures <strong>optimal allocation of these resources</strong>, reducing idle time and preventing burnout.</p>
+
+  <div class="ssub">3. On-Time Delivery</div>
+  <p class="bt">Through careful scheduling and monitoring, PM helps ensure that the <strong>software is delivered on time</strong>. Late delivery is one of the most common failures in software projects.</p>
+
+  <div class="ssub">4. Cost Control</div>
+  <p class="bt">Software projects frequently go over budget. PM techniques help <strong>track expenditures against baselines</strong> and take corrective actions before costs spiral out of control.</p>
+
+  <div class="ssub">5. Risk Mitigation</div>
+  <p class="bt">Software development is inherently risky — changing requirements, technology failures, key person dependencies. PM provides a <strong>structured approach to identify and mitigate these risks</strong> before they become problems.</p>
+
+  <div class="ssub">6. Quality Assurance</div>
+  <p class="bt">PM establishes quality standards and processes to ensure that the <strong>software meets user expectations and industry standards</strong>, reducing rework and defects.</p>
+
+  <div class="ibox">
+    <div class="ibox-title">Triple Constraint (Iron Triangle)</div>
+    <div class="ibox-body">
+      <p>▸ <strong>Scope</strong> — What must be delivered?</p>
+      <p>▸ <strong>Time</strong> — When must it be delivered?</p>
+      <p>▸ <strong>Cost</strong> — How much can be spent?</p>
+      <p>▸ Changes to any one constraint affect the others — PM balances all three.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ Q4 ══════════ -->
+<section class="qblock" id="q4">
+  <div class="q-header">
+    <div class="q-badge"><span>4</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 04 · CO1 · Understand (BT2)</div>
+      <h2 class="q-title">Explain the Concept of Stakeholder Management in Project Management.</h2>
+      <div class="q-tags"><span class="tag">Stakeholders</span><span class="tag co">CO1</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>Who are Stakeholders?</div>
+  <div class="def">A <strong>stakeholder</strong> is any individual, group, or organisation who may affect, be affected by, or perceive themselves to be affected by a decision, activity, or outcome of a project. Stakeholder management is the process of identifying stakeholders, understanding their interests and influence, and developing strategies to engage them effectively.</div>
+
+  <div class="sh"><span>◆</span>Types of Stakeholders</div>
+  <div class="tcol">
+    <div class="ccard"><h4>Internal Stakeholders</h4><p>Project team members, project manager, project sponsor, senior management, functional managers within the organisation.</p></div>
+    <div class="ccard"><h4>External Stakeholders</h4><p>Customers/clients, end users, suppliers, vendors, regulatory bodies, competitors, the general public.</p></div>
+  </div>
+
+  <div class="sh"><span>◆</span>Stakeholder Management Process</div>
+
+  <div class="ssub">Step 1 — Identify Stakeholders</div>
+  <p class="bt">The first step is to <strong>identify all individuals and groups</strong> who have an interest in or will be affected by the project. A Stakeholder Register is created containing their names, roles, interests, and influence level.</p>
+
+  <div class="ssub">Step 2 — Analyse Stakeholders</div>
+  <p class="bt">Each stakeholder is assessed for their <strong>power/interest</strong> in the project. A Power-Interest Grid is commonly used — high power, high interest stakeholders are managed most closely.</p>
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Power</th><th>Interest</th><th>Strategy</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>High</td><td>High</td><td>Manage Closely</td><td>Project Sponsor</td></tr>
+        <tr><td>High</td><td>Low</td><td>Keep Satisfied</td><td>Senior Management</td></tr>
+        <tr><td>Low</td><td>High</td><td>Keep Informed</td><td>End Users</td></tr>
+        <tr><td>Low</td><td>Low</td><td>Monitor</td><td>General Public</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ssub">Step 3 — Plan Stakeholder Engagement</div>
+  <p class="bt">Develop strategies for <strong>how to communicate and engage</strong> with each stakeholder group. Define frequency, format, and channels of communication. Address concerns and manage expectations proactively.</p>
+
+  <div class="ssub">Step 4 — Manage Engagement</div>
+  <p class="bt">Actively <strong>communicate, involve, and respond</strong> to stakeholders throughout the project. Hold regular meetings, distribute progress reports, and handle feedback and conflict resolution professionally.</p>
+
+  <div class="ssub">Step 5 — Monitor Stakeholder Engagement</div>
+  <p class="bt">Continuously <strong>track stakeholder engagement levels</strong> and update strategies as the project progresses and as stakeholder needs change.</p>
+
+  <div class="callout"><span class="callout-icon">💡</span><p><strong>Why is Stakeholder Management Important?</strong> Unmanaged stakeholders can derail a project. A dissatisfied sponsor may withdraw funding; unhappy users may reject the final product; regulatory bodies may halt delivery. Effective stakeholder management ensures project success.</p></div>
+</section>
+
+<!-- ══════════ Q5 ══════════ -->
+<section class="qblock" id="q5">
+  <div class="q-header">
+    <div class="q-badge"><span>5</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 05 · CO1 · Understand (BT2)</div>
+      <h2 class="q-title">Describe the Project Management Profession and Its Importance in Organizations.</h2>
+      <div class="q-tags"><span class="tag">PM Profession</span><span class="tag co">CO1</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>Project Management as a Profession</div>
+  <p class="bt"><strong>Project Management</strong> has grown into a recognised, globally respected profession with its own body of knowledge, certifications, ethics, and professional standards. It is practised across virtually every industry — IT, construction, healthcare, finance, government, and more.</p>
+
+  <div class="sh"><span>◆</span>Key Professional Bodies</div>
+  <div class="tcol">
+    <div class="ccard"><h4>PMI — Project Management Institute</h4><p>Global leader in PM standards. Publishes the PMBOK Guide. Offers PMP (Project Management Professional) certification — the world's most recognised PM credential.</p></div>
+    <div class="ccard"><h4>PRINCE2</h4><p>Projects IN Controlled Environments — a structured project management method widely used in the UK and internationally. Process-based approach.</p></div>
+  </div>
+
+  <div class="sh"><span>◆</span>Key Certifications</div>
+  <ul class="nl">
+    <li><strong>PMP (Project Management Professional)</strong> — offered by PMI, globally recognised</li>
+    <li><strong>CAPM (Certified Associate in PM)</strong> — entry-level PM certification by PMI</li>
+    <li><strong>PRINCE2 Practitioner</strong> — UK and Europe widely recognised</li>
+    <li><strong>CSM (Certified Scrum Master)</strong> — Agile project management</li>
+    <li><strong>ITIL Foundation</strong> — IT service management certification</li>
+  </ul>
+
+  <div class="sh"><span>◆</span>Importance of PM Profession in Organisations</div>
+
+  <div class="ssub">1. Strategic Alignment</div>
+  <p class="bt">Professional PM ensures that projects are <strong>aligned with organisational strategy</strong>. Projects that don't contribute to strategic goals waste resources and time.</p>
+
+  <div class="ssub">2. Improved Success Rate</div>
+  <p class="bt">Organisations with mature PM practices have a <strong>significantly higher rate of successful project delivery</strong> — on time, within budget, and meeting requirements.</p>
+
+  <div class="ssub">3. Knowledge Retention</div>
+  <p class="bt">Professional PM practices promote <strong>documentation and lessons learned</strong>, ensuring organisational knowledge is retained and applied to future projects.</p>
+
+  <div class="ssub">4. Competitive Advantage</div>
+  <p class="bt">Organisations that deliver projects efficiently gain a <strong>competitive edge</strong> — faster time-to-market, lower costs, and higher customer satisfaction.</p>
+
+  <div class="ssub">5. Standardisation</div>
+  <p class="bt">A professional PM approach creates <strong>standardised processes and templates</strong> that can be reused across projects, reducing setup time and increasing consistency.</p>
+
+  <div class="ssub">6. Customer Satisfaction</div>
+  <p class="bt">Well-managed projects that are delivered on time and within scope naturally lead to <strong>higher customer satisfaction</strong> and repeat business.</p>
+</section>
+
+<!-- ══════════ Q6 ══════════ -->
+<section class="qblock" id="q6">
+  <div class="q-header">
+    <div class="q-badge"><span>6</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 06 · CO1 · Understand (BT2)</div>
+      <h2 class="q-title">Explain the System View of Project Management in the Context of IT Projects.</h2>
+      <div class="q-tags"><span class="tag">System View</span><span class="tag">IT Projects</span><span class="tag co">CO1</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is the Systems Approach?</div>
+  <div class="def">A <strong>systems approach</strong> to project management views a project not as an isolated activity but as a <em>complex system</em> with multiple interrelated parts that must work together to achieve project goals. It considers the organisation, project environment, people, processes, and technology as a whole system.</div>
+
+  <div class="sh"><span>◆</span>Systems Thinking in Project Management</div>
+  <p class="bt">Systems thinking encourages project managers to <strong>think holistically</strong> rather than focusing on individual components. A change in one part of the system affects other parts. For example, reducing the project timeline (time) may require more resources (cost) or reduced scope.</p>
+
+  <div class="sh"><span>◆</span>Three-Sphere Model of Systems Management</div>
+  <div class="three-col">
+    <div class="phase-card"><div class="ph-num">Sphere 1</div><h4>Business Sphere</h4><p>Focuses on organisational goals, return on investment, strategic alignment, and business value of the project.</p></div>
+    <div class="phase-card"><div class="ph-num">Sphere 2</div><h4>Technology Sphere</h4><p>Covers technical aspects — software architecture, tools, platforms, infrastructure, and technical feasibility.</p></div>
+    <div class="phase-card"><div class="ph-num">Sphere 3</div><h4>Organisational Sphere</h4><p>Addresses people, processes, culture, politics, and organisational structure that influence the project.</p></div>
+  </div>
+
+  <div class="sh"><span>◆</span>Systems View Applied to IT Projects</div>
+
+  <div class="ssub">Inputs</div>
+  <p class="bt">IT projects take in various inputs — <strong>requirements, resources (people, hardware, software), budget, time, and stakeholder expectations</strong>. These are the raw materials of the system.</p>
+
+  <div class="ssub">Processes</div>
+  <p class="bt">The project management processes (<strong>planning, executing, monitoring, controlling</strong>) transform inputs into outputs. These processes must be efficient and well-coordinated.</p>
+
+  <div class="ssub">Outputs</div>
+  <p class="bt">The outputs are the <strong>working software, system documentation, test reports, and trained users</strong>. These outputs must meet the requirements defined at the project outset.</p>
+
+  <div class="ssub">Feedback Loops</div>
+  <p class="bt">A key aspect of systems thinking is <strong>feedback loops</strong>. Monitoring and controlling phases provide continuous feedback that allows the project manager to adjust plans and take corrective action.</p>
+
+  <div class="note-box"><span style="font-size:16px;flex-shrink:0">📌</span><p><strong>Example:</strong> In an IT project to build a hospital management system, the systems view considers: business needs (efficient patient records), technology (database, web app), and organisational aspects (training staff, change management) — all as an integrated system.</p></div>
+</section>
+
+<!-- ══════════ Q7 ══════════ -->
+<section class="qblock" id="q7">
+  <div class="q-header">
+    <div class="q-badge"><span>7</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 07 · CO1 · Understand (BT2)</div>
+      <h2 class="q-title">Explain the Context of Information Technology Projects in Project Management.</h2>
+      <div class="q-tags"><span class="tag">IT Context</span><span class="tag co">CO1</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What are IT Projects?</div>
+  <div class="def">An <strong>IT Project</strong> is a temporary endeavour undertaken to create a unique IT product, service, or result. Examples include software development, network infrastructure setup, ERP implementation, website development, and cybersecurity system deployment. IT projects have unique characteristics that make them both challenging and exciting.</div>
+
+  <div class="sh"><span>◆</span>Unique Characteristics of IT Projects</div>
+
+  <div class="ssub">1. Rapidly Changing Technology</div>
+  <p class="bt">Technology evolves at an unprecedented pace. IT projects often face <strong>technology obsolescence risks</strong> — a platform chosen at project start may be outdated by delivery. PMs must account for technology change throughout the project.</p>
+
+  <div class="ssub">2. Invisible Products</div>
+  <p class="bt">Unlike construction projects where progress is visible (walls, floors), IT project progress is <strong>largely invisible</strong>. Software is intangible, making it harder for stakeholders to gauge progress. Regular demos and prototypes help address this.</p>
+
+  <div class="ssub">3. High Rate of Failure</div>
+  <p class="bt">Studies (Standish Group CHAOS Report) show that <strong>a large percentage of IT projects fail</strong> to be delivered on time, on budget, or with the required features. Effective PM reduces this risk significantly.</p>
+
+  <div class="ssub">4. Scope Creep</div>
+  <p class="bt"><strong>Scope creep</strong> — the continuous, uncontrolled addition of new features — is extremely common in IT projects. As users interact with the system, they request more features. PMs must rigorously manage scope through change control.</p>
+
+  <div class="ssub">5. Team Diversity &amp; Distribution</div>
+  <p class="bt">IT teams are often <strong>globally distributed</strong>, spanning different time zones, cultures, and languages. Managing virtual teams requires special communication and collaboration skills and tools.</p>
+
+  <div class="ssub">6. Dependency on Human Capital</div>
+  <p class="bt">IT projects are highly <strong>people-dependent</strong>. The loss of a key developer or architect can severely impact the project. Knowledge management and documentation are critical.</p>
+
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>IT Project Type</th><th>Description</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Software Development</td><td>Building custom applications</td><td>Banking app, ERP system</td></tr>
+        <tr><td>Infrastructure</td><td>Setting up networks, servers, cloud</td><td>AWS migration, data center setup</td></tr>
+        <tr><td>System Integration</td><td>Connecting existing systems</td><td>CRM + ERP integration</td></tr>
+        <tr><td>Cybersecurity</td><td>Securing systems and data</td><td>Firewall deployment, pen testing</td></tr>
+        <tr><td>Data &amp; Analytics</td><td>Data warehouses, BI systems</td><td>Dashboard implementation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ibox">
+    <div class="ibox-title">CHAOS Report — Reasons for IT Project Failure</div>
+    <div class="ibox-body">
+      <p>▸ Lack of user involvement</p>
+      <p>▸ Incomplete or changing requirements</p>
+      <p>▸ Lack of executive support</p>
+      <p>▸ Poor planning and estimation</p>
+      <p>▸ Inadequate project management skills</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ Q8 ══════════ -->
+<section class="qblock" id="q8">
+  <div class="q-header">
+    <div class="q-badge"><span>8</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 08 · CO2 · Understand (BT2)</div>
+      <h2 class="q-title">What are Project Metrics? How Do They Help in Project Evaluation?</h2>
+      <div class="q-tags"><span class="tag">Metrics</span><span class="tag">Evaluation</span><span class="tag co">CO2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What are Project Metrics?</div>
+  <div class="def"><strong>Project Metrics</strong> are quantitative measurements used to assess the performance, progress, and health of a project. They provide objective data that helps project managers and stakeholders make informed decisions, identify problems early, and evaluate project success against defined targets.</div>
+
+  <div class="sh"><span>◆</span>Categories of Project Metrics</div>
+
+  <div class="ssub">1. Schedule Metrics</div>
+  <p class="bt">Measure whether the project is on track with the planned timeline.</p>
+  <ul class="nl">
+    <li><strong>Schedule Variance (SV)</strong> = Earned Value (EV) − Planned Value (PV). Negative = behind schedule.</li>
+    <li><strong>Schedule Performance Index (SPI)</strong> = EV / PV. SPI &lt; 1 means behind schedule.</li>
+    <li><strong>Milestone Completion Rate</strong> — percentage of milestones achieved on time</li>
+  </ul>
+
+  <div class="ssub">2. Cost Metrics</div>
+  <p class="bt">Measure financial performance of the project.</p>
+  <ul class="nl">
+    <li><strong>Cost Variance (CV)</strong> = Earned Value (EV) − Actual Cost (AC). Negative = over budget.</li>
+    <li><strong>Cost Performance Index (CPI)</strong> = EV / AC. CPI &lt; 1 means over budget.</li>
+    <li><strong>Budget Utilisation Rate</strong> — actual spend as a percentage of planned spend</li>
+  </ul>
+
+  <div class="ssub">3. Quality Metrics</div>
+  <p class="bt">Measure the quality of deliverables produced.</p>
+  <ul class="nl">
+    <li><strong>Defect Density</strong> — number of defects per KLOC (thousand lines of code)</li>
+    <li><strong>Defect Detection Rate</strong> — percentage of defects found in testing vs. production</li>
+    <li><strong>Customer Satisfaction Score</strong> — measured through surveys and reviews</li>
+  </ul>
+
+  <div class="ssub">4. Productivity Metrics</div>
+  <p class="bt">Measure team output and efficiency.</p>
+  <ul class="nl">
+    <li><strong>Velocity</strong> (Agile) — story points completed per sprint</li>
+    <li><strong>Function Points</strong> — measure of functional size of software</li>
+    <li><strong>Lines of Code (LOC)</strong> — amount of code produced per developer</li>
+  </ul>
+
+  <div class="sh"><span>◆</span>How Metrics Help in Project Evaluation</div>
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Metric</th><th>Formula</th><th>Interpretation</th></tr></thead>
+      <tbody>
+        <tr><td>SV (Schedule Variance)</td><td>EV − PV</td><td>Negative = behind; Positive = ahead</td></tr>
+        <tr><td>CV (Cost Variance)</td><td>EV − AC</td><td>Negative = over budget; Positive = under budget</td></tr>
+        <tr><td>SPI (Schedule Perf. Index)</td><td>EV / PV</td><td>&lt;1 behind, =1 on track, &gt;1 ahead</td></tr>
+        <tr><td>CPI (Cost Perf. Index)</td><td>EV / AC</td><td>&lt;1 over budget, =1 on budget, &gt;1 under</td></tr>
+        <tr><td>EAC (Estimate at Completion)</td><td>BAC / CPI</td><td>Forecast of total project cost</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout"><span class="callout-icon">📊</span><p><strong>Earned Value Management (EVM)</strong> combines scope, schedule, and cost metrics into a single integrated system. It is the most powerful method for project performance measurement and forecasting.</p></div>
+</section>
+
+<!-- ══════════ Q9 ══════════ -->
+<section class="qblock" id="q9">
+  <div class="q-header">
+    <div class="q-badge"><span>9</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 09 · CO2 · Understand (BT2)</div>
+      <h2 class="q-title">Explain Project Schedule in Detail.</h2>
+      <div class="q-tags"><span class="tag">Schedule</span><span class="tag">Gantt</span><span class="tag">CPM</span><span class="tag co">CO2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is a Project Schedule?</div>
+  <div class="def">A <strong>Project Schedule</strong> is a document that defines when project activities will start, how long they will take, and when they will finish. It serves as the baseline for monitoring progress and managing time. It maps every task, dependency, resource, and milestone across the project timeline.</div>
+
+  <div class="sh"><span>◆</span>Components of a Project Schedule</div>
+  <ul class="nl">
+    <li><strong>Activities / Tasks</strong> — specific work items that must be completed</li>
+    <li><strong>Milestones</strong> — significant events or checkpoints in the project</li>
+    <li><strong>Dependencies</strong> — relationships between tasks (finish-to-start, start-to-start, etc.)</li>
+    <li><strong>Duration</strong> — estimated time needed to complete each activity</li>
+    <li><strong>Resources</strong> — people, equipment, and materials assigned to tasks</li>
+    <li><strong>Start &amp; Finish Dates</strong> — planned beginning and end of each activity</li>
+    <li><strong>Critical Path</strong> — the longest sequence of dependent tasks determining minimum project duration</li>
+  </ul>
+
+  <div class="sh"><span>◆</span>Scheduling Techniques</div>
+
+  <div class="ssub">1. Gantt Chart</div>
+  <p class="bt">A <strong>Gantt Chart</strong> is a bar chart that shows project activities against a calendar. Each task is represented as a horizontal bar. Its length represents the task duration. Gantt charts provide a visual, easy-to-understand schedule view.</p>
+  <div class="def"><strong>Advantages:</strong> Simple, visual, easy to update, shows task overlaps and sequence clearly.<br/><strong>Limitation:</strong> Does not easily show dependencies or the critical path for complex projects.</div>
+
+  <div class="ssub">2. Critical Path Method (CPM)</div>
+  <p class="bt">CPM identifies the <strong>longest path of dependent tasks</strong> through the project network — the critical path. Any delay on the critical path directly delays the entire project. Tasks not on the critical path have <em>float/slack</em> — they can be delayed without impacting the final deadline.</p>
+
+  <div class="ssub">3. PERT (Program Evaluation and Review Technique)</div>
+  <p class="bt">PERT uses <strong>probabilistic time estimates</strong> for activities:</p>
+  <div class="def"><strong>PERT Expected Time</strong> = (Optimistic + 4×Most Likely + Pessimistic) / 6<br/>This accounts for uncertainty in duration estimates, making PERT especially useful for research and development projects.</div>
+
+  <div class="ssub">4. Precedence Diagramming Method (PDM)</div>
+  <p class="bt">PDM represents activities as nodes and dependencies as arrows. Supports four types of dependencies: <strong>Finish-to-Start, Start-to-Start, Finish-to-Finish, Start-to-Finish</strong>.</p>
+
+  <div class="sh"><span>◆</span>Schedule Baseline</div>
+  <p class="bt">Once approved, the project schedule becomes the <strong>schedule baseline</strong> — the agreed reference point against which actual progress is measured throughout the project. Changes require formal change control.</p>
+</section>
+
+<!-- ══════════ Q10 ══════════ -->
+<section class="qblock" id="q10">
+  <div class="q-header">
+    <div class="q-badge"><span>10</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 10 · CO2 · Understand (BT2)</div>
+      <h2 class="q-title">What are the Advantages of Using Project Management Software Tools?</h2>
+      <div class="q-tags"><span class="tag">PM Tools</span><span class="tag">Software</span><span class="tag co">CO2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What are PM Software Tools?</div>
+  <div class="def"><strong>Project Management Software Tools</strong> are applications designed to assist project managers in planning, scheduling, resource allocation, collaboration, tracking, and reporting. They automate many routine PM tasks and provide real-time visibility into project status.</div>
+
+  <div class="sh"><span>◆</span>Popular PM Software Tools</div>
+  <div class="pills">
+    <div class="pill"><span class="k">MS Project</span></div>
+    <div class="pill"><span class="k">JIRA</span></div>
+    <div class="pill"><span class="k">Trello</span></div>
+    <div class="pill"><span class="k">Asana</span></div>
+    <div class="pill"><span class="k">Monday.com</span></div>
+    <div class="pill"><span class="k">Primavera P6</span></div>
+    <div class="pill"><span class="k">Basecamp</span></div>
+    <div class="pill"><span class="k">Smartsheet</span></div>
+  </div>
+
+  <div class="sh"><span>◆</span>Advantages of PM Software Tools</div>
+
+  <div class="ssub">1. Improved Planning Efficiency</div>
+  <p class="bt">PM software automates the creation of <strong>Gantt charts, WBS, and project networks</strong>. What used to take days manually can be done in hours. Templates can be reused across projects.</p>
+
+  <div class="ssub">2. Real-Time Progress Tracking</div>
+  <p class="bt">Tools provide <strong>dashboards and real-time visibility</strong> into task completion, resource utilisation, and schedule performance. Managers can instantly see which tasks are on track, delayed, or at risk.</p>
+
+  <div class="ssub">3. Resource Management</div>
+  <p class="bt">PM tools help identify <strong>resource conflicts and over-allocation</strong>. They show each team member's workload, enabling the manager to reassign tasks and balance the load across the team.</p>
+
+  <div class="ssub">4. Budget Tracking</div>
+  <p class="bt">Tools integrate budget management, allowing <strong>actual costs to be tracked against planned costs</strong>. EVM calculations (SV, CV, CPI, SPI) are often automated, providing instant financial health views.</p>
+
+  <div class="ssub">5. Enhanced Collaboration</div>
+  <p class="bt">Cloud-based PM tools allow <strong>globally distributed teams to collaborate in real time</strong>. Team members can update task status, share documents, and communicate within the tool itself.</p>
+
+  <div class="ssub">6. Risk Management Support</div>
+  <p class="bt">Many tools include <strong>risk registers, issue trackers, and change request management</strong> modules, centralising all project control in one platform.</p>
+
+  <div class="ssub">7. Documentation &amp; Reporting</div>
+  <p class="bt">PM tools automatically generate <strong>status reports, performance dashboards, and project summaries</strong>, saving significant manual effort and ensuring consistent reporting formats.</p>
+
+  <div class="ssub">8. Historical Data for Future Projects</div>
+  <p class="bt">Project data stored in PM tools becomes a <strong>valuable knowledge base</strong> for estimating future projects, identifying patterns, and continuously improving the organisation's PM maturity.</p>
+
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Tool</th><th>Best For</th><th>Methodology</th></tr></thead>
+      <tbody>
+        <tr><td>MS Project</td><td>Large, complex projects</td><td>Waterfall, Traditional</td></tr>
+        <tr><td>JIRA</td><td>Software development teams</td><td>Agile (Scrum/Kanban)</td></tr>
+        <tr><td>Trello</td><td>Small teams, simple projects</td><td>Kanban</td></tr>
+        <tr><td>Primavera P6</td><td>Construction, mega-projects</td><td>Traditional</td></tr>
+        <tr><td>Asana</td><td>Work management, task tracking</td><td>Flexible</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ Q11 ══════════ -->
+<section class="qblock" id="q11">
+  <div class="q-header">
+    <div class="q-badge"><span>11</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 11 · CO2 · Understand (BT2)</div>
+      <h2 class="q-title">Discuss the Importance of Monitoring and Controlling a Project.</h2>
+      <div class="q-tags"><span class="tag">Monitoring</span><span class="tag">Controlling</span><span class="tag co">CO2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is Monitoring &amp; Controlling?</div>
+  <div class="def"><strong>Monitoring and Controlling</strong> is the process of tracking, reviewing, and regulating the progress and performance of the project against the project management plan. It occurs throughout the project lifecycle, running <em>parallel to execution</em>. Without monitoring, a project can silently drift off-course before anyone notices.</div>
+
+  <div class="sh"><span>◆</span>Key Activities in Monitoring &amp; Controlling</div>
+  <ul class="nl">
+    <li><strong>Performance Reporting</strong> — comparing actual vs. planned scope, time, and cost</li>
+    <li><strong>Change Control</strong> — evaluating and managing all requested changes</li>
+    <li><strong>Risk Monitoring</strong> — tracking identified risks and watching for new ones</li>
+    <li><strong>Quality Control</strong> — inspecting deliverables to ensure they meet standards</li>
+    <li><strong>Schedule Control</strong> — managing changes to the project schedule baseline</li>
+    <li><strong>Cost Control</strong> — managing changes to the project budget baseline</li>
+  </ul>
+
+  <div class="sh"><span>◆</span>Importance of Monitoring &amp; Controlling</div>
+
+  <div class="ssub">1. Early Detection of Problems</div>
+  <p class="bt">Regular monitoring allows the PM to <strong>identify deviations from the plan early</strong>, before they become critical. A small schedule delay caught early can often be recovered; the same delay caught late may cascade into a major project crisis.</p>
+
+  <div class="ssub">2. Ensures On-Time Delivery</div>
+  <p class="bt">By continuously comparing actual progress against the schedule, the PM can take <strong>corrective actions (crashing, fast-tracking)</strong> to bring the project back on track.</p>
+
+  <div class="ssub">3. Cost Control</div>
+  <p class="bt"><strong>Budget overruns</strong> are a leading cause of project failure. Regular cost monitoring using EVM techniques allows the PM to forecast final costs and intervene before spending gets out of control.</p>
+
+  <div class="ssub">4. Stakeholder Confidence</div>
+  <p class="bt">Regular, transparent reporting builds <strong>stakeholder trust and confidence</strong>. Stakeholders who are kept informed are less likely to interfere unpredictably or withdraw support.</p>
+
+  <div class="ssub">5. Scope Management</div>
+  <p class="bt">Monitoring prevents <strong>scope creep</strong> — the unauthorised addition of new requirements. Change requests are formally evaluated and only approved when justified, keeping the project focused.</p>
+
+  <div class="ssub">6. Quality Assurance</div>
+  <p class="bt">Controlling quality throughout the project (not just at the end) ensures that <strong>defects are caught early</strong>, when they are cheapest to fix. The cost of fixing a defect exponentially increases the later it is found.</p>
+
+  <div class="callout"><span class="callout-icon">⚡</span><p><strong>Key Principle:</strong> "You cannot manage what you cannot measure." Monitoring provides the data; controlling provides the response. Together, they keep the project on its intended course.</p></div>
+</section>
+
+<!-- ══════════ Q12 ══════════ -->
+<section class="qblock" id="q12">
+  <div class="q-header">
+    <div class="q-badge"><span>12</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 12 · CO2 · Understand (BT2)</div>
+      <h2 class="q-title">Describe Information Distribution with Example.</h2>
+      <div class="q-tags"><span class="tag">Information Distribution</span><span class="tag co">CO2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is Information Distribution?</div>
+  <div class="def"><strong>Information Distribution</strong> is the process of making relevant project information available to project stakeholders in a timely manner, as outlined in the Communications Management Plan. It involves providing stakeholders with the right information, at the right time, in the right format, through the right channel.</div>
+
+  <div class="sh"><span>◆</span>Types of Information Distributed</div>
+  <ul class="nl">
+    <li><strong>Status Reports</strong> — current state of project scope, schedule, cost, and quality</li>
+    <li><strong>Progress Reports</strong> — what has been accomplished during a reporting period</li>
+    <li><strong>Performance Reports</strong> — EVM data, variance analysis, forecasts</li>
+    <li><strong>Meeting Minutes</strong> — decisions and action items from meetings</li>
+    <li><strong>Change Requests &amp; Approvals</strong> — formal change documentation</li>
+    <li><strong>Risk Updates</strong> — new risks, risk status changes, mitigation actions</li>
+  </ul>
+
+  <div class="sh"><span>◆</span>Methods &amp; Channels of Distribution</div>
+  <div class="tcol">
+    <div class="ccard"><h4>Push Communication</h4><p>Information is <strong>sent to recipients</strong> without them requesting it. Emails, reports, status updates, newsletters. Good for ensuring everyone has the information.</p></div>
+    <div class="ccard"><h4>Pull Communication</h4><p>Information is <strong>stored centrally</strong> and recipients access it when needed. Shared drives, project portals, wikis, knowledge bases.</p></div>
+  </div>
+  <div class="tcol">
+    <div class="ccard"><h4>Interactive Communication</h4><p>Two-way real-time exchange. Meetings, video calls, phone calls, instant messaging. Best for complex discussions.</p></div>
+    <div class="ccard"><h4>Formal vs. Informal</h4><p>Formal: official reports, presentations, signed documents. Informal: team chats, corridor conversations, quick emails.</p></div>
+  </div>
+
+  <div class="sh"><span>◆</span>Example — Software Development Project</div>
+  <div class="note-box"><span style="font-size:16px;flex-shrink:0">📋</span><p><strong>Scenario:</strong> ABC Corp is developing a payroll software system with a 6-month timeline. Information Distribution Plan:<br/>
+  <strong>Weekly</strong> — Project status email to all team members &amp; sponsor (push).<br/>
+  <strong>Bi-weekly</strong> — Video call with steering committee reviewing EVM metrics.<br/>
+  <strong>Monthly</strong> — Formal progress report to client with milestone completion status.<br/>
+  <strong>Ongoing</strong> — JIRA board accessible to all stakeholders for task-level visibility (pull).<br/>
+  <strong>Ad hoc</strong> — Risk alerts sent immediately when a new critical risk is identified.</p></div>
+
+  <div class="sh"><span>◆</span>Tools for Information Distribution</div>
+  <ul class="nl">
+    <li><strong>Email / MS Outlook</strong> — for formal communication and status reports</li>
+    <li><strong>MS Teams / Slack</strong> — for real-time team collaboration</li>
+    <li><strong>SharePoint / Confluence</strong> — centralised document repositories (pull)</li>
+    <li><strong>JIRA / Monday.com</strong> — real-time task and project status visibility</li>
+    <li><strong>Zoom / Google Meet</strong> — virtual meetings and presentations</li>
+  </ul>
+</section>
+
+<!-- ══════════ Q13 ══════════ -->
+<section class="qblock" id="q13">
+  <div class="q-header">
+    <div class="q-badge"><span>13</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 13 · CO2 · Understand (BT2)</div>
+      <h2 class="q-title">How to Develop the Project Budget? Explain in Brief.</h2>
+      <div class="q-tags"><span class="tag">Budget</span><span class="tag">Cost Management</span><span class="tag co">CO2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is a Project Budget?</div>
+  <div class="def">A <strong>Project Budget</strong> is the total estimated cost of the project, including all approved costs for completing the project scope. It is derived by aggregating estimated costs of individual activities and serves as the financial baseline against which actual spending is measured and controlled.</div>
+
+  <div class="sh"><span>◆</span>Steps to Develop a Project Budget</div>
+
+  <div class="ssub">Step 1 — Resource Planning</div>
+  <p class="bt">Identify <strong>what resources are needed</strong> for the project — people (developers, testers, designers), equipment, software licenses, office space, and materials. The project schedule and WBS guide this step.</p>
+
+  <div class="ssub">Step 2 — Cost Estimation</div>
+  <p class="bt">Estimate the cost of each resource required. Common estimation techniques include:</p>
+  <ul class="nl">
+    <li><strong>Analogous Estimating</strong> — using costs from similar past projects</li>
+    <li><strong>Parametric Estimating</strong> — using statistical relationships (e.g., cost per function point)</li>
+    <li><strong>Bottom-Up Estimating</strong> — estimating each task individually and rolling up</li>
+    <li><strong>Three-Point Estimating</strong> — (Optimistic + Most Likely + Pessimistic) / 3</li>
+    <li><strong>Expert Judgment</strong> — consulting experienced professionals</li>
+  </ul>
+
+  <div class="ssub">Step 3 — Cost Aggregation</div>
+  <p class="bt">Aggregate individual activity costs up through the WBS to arrive at the <strong>total project cost estimate</strong>. Costs are summed at each WBS level from tasks → work packages → control accounts → total project.</p>
+
+  <div class="ssub">Step 4 — Reserve Analysis</div>
+  <p class="bt">Add <strong>contingency reserves</strong> (for identified risks) and <strong>management reserves</strong> (for unknown unknowns) to the base estimate. Typically 5-15% of the project estimate depending on uncertainty level.</p>
+
+  <div class="ssub">Step 5 — Establish Cost Baseline</div>
+  <p class="bt">The approved budget (excluding management reserves) becomes the <strong>cost baseline</strong> — the authorised time-phased budget used for measuring, monitoring, and controlling project cost performance.</p>
+
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Cost Category</th><th>Description</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Labour / Personnel</td><td>Salaries, hourly rates of team</td><td>Developer salary ₹80k/month</td></tr>
+        <tr><td>Hardware</td><td>Servers, computers, network gear</td><td>Cloud server rental</td></tr>
+        <tr><td>Software / Licenses</td><td>Tools, platforms, subscriptions</td><td>AWS, JIRA, MS Office</td></tr>
+        <tr><td>Training</td><td>Team upskilling costs</td><td>Cloud certification course</td></tr>
+        <tr><td>Travel &amp; Expenses</td><td>Client visits, conferences</td><td>Client site visit cost</td></tr>
+        <tr><td>Contingency Reserve</td><td>Buffer for identified risks</td><td>10% of base estimate</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ Q14 ══════════ -->
+<section class="qblock" id="q14">
+  <div class="q-header">
+    <div class="q-badge"><span>14</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 14 · CO2 · Understand (BT2)</div>
+      <h2 class="q-title">Explain Project Communication Plan in Brief.</h2>
+      <div class="q-tags"><span class="tag">Communication Plan</span><span class="tag co">CO2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is a Communication Plan?</div>
+  <div class="def">A <strong>Project Communication Plan</strong> is a document that describes how, when, and by whom project information will be administered, collected, and distributed to stakeholders throughout the project life cycle. It is part of the overall Project Management Plan and ensures that all stakeholders receive the right information at the right time.</div>
+
+  <div class="sh"><span>◆</span>Why is a Communication Plan Needed?</div>
+  <p class="bt">Studies show that <strong>project managers spend up to 90% of their time communicating</strong>. Poor communication is cited as one of the top causes of project failure. A formal communication plan ensures nothing falls through the cracks.</p>
+
+  <div class="sh"><span>◆</span>Key Components of a Communication Plan</div>
+
+  <div class="ssub">1. Stakeholder Identification</div>
+  <p class="bt">List all stakeholders who need to receive project communications — their names, roles, and contact information. Different stakeholders need different types and levels of information.</p>
+
+  <div class="ssub">2. Information Requirements</div>
+  <p class="bt">Define <strong>what information each stakeholder needs</strong>: project status, technical details, financial reports, risk updates, etc. Senior management may need high-level summaries; technical teams need detailed task information.</p>
+
+  <div class="ssub">3. Communication Method</div>
+  <p class="bt">Specify the <strong>channel and format</strong> for each communication: email, meetings, reports, dashboards, phone calls. Consider stakeholder preferences and geographic distribution.</p>
+
+  <div class="ssub">4. Frequency &amp; Timing</div>
+  <p class="bt">Define <strong>how often</strong> communications will occur — daily stand-ups, weekly status reports, monthly steering committee meetings, ad-hoc for urgent issues.</p>
+
+  <div class="ssub">5. Responsible Person (Sender)</div>
+  <p class="bt">Identify <strong>who is responsible</strong> for preparing and distributing each communication. Accountability ensures communications are not missed.</p>
+
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Communication</th><th>Audience</th><th>Frequency</th><th>Method</th><th>Owner</th></tr></thead>
+      <tbody>
+        <tr><td>Project Status Report</td><td>Sponsor, Steering Committee</td><td>Weekly</td><td>Email + PPT</td><td>PM</td></tr>
+        <tr><td>Daily Stand-up</td><td>Dev Team</td><td>Daily</td><td>Video Call</td><td>Team Lead</td></tr>
+        <tr><td>Risk Register Update</td><td>PM, Sponsor</td><td>Bi-weekly</td><td>Document</td><td>Risk Manager</td></tr>
+        <tr><td>Monthly Report</td><td>Client</td><td>Monthly</td><td>Formal Report</td><td>PM</td></tr>
+        <tr><td>Change Request Notice</td><td>Steering Committee</td><td>As needed</td><td>Email + Meeting</td><td>PM</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ssub">6. Escalation Process</div>
+  <p class="bt">Define how <strong>issues are escalated</strong> when they cannot be resolved at the current level. Who does the PM escalate to? What response time is expected? Clarity here prevents critical issues from stalling.</p>
+</section>
+
+<!-- ══════════ Q15 ══════════ -->
+<section class="qblock" id="q15">
+  <div class="q-header">
+    <div class="q-badge"><span>15</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 15 · CO2 · Understand (BT2)</div>
+      <h2 class="q-title">Explain How to Develop and Finalize a Project Schedule.</h2>
+      <div class="q-tags"><span class="tag">Schedule Development</span><span class="tag">WBS</span><span class="tag co">CO2</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>Process of Developing a Project Schedule</div>
+  <p class="bt">Developing a project schedule is an iterative process involving several steps. It is one of the most important planning activities in project management.</p>
+
+  <div class="ssub">Step 1 — Define Activities</div>
+  <p class="bt">Break down the project scope using the <strong>Work Breakdown Structure (WBS)</strong> into individual, manageable activities/tasks. Each work package in the WBS is decomposed into schedule activities.</p>
+  <div class="def"><strong>Example:</strong> WBS work package "Develop Login Module" → Activities: Design UI, Code backend API, Write unit tests, Code review, Integration testing.</div>
+
+  <div class="ssub">Step 2 — Sequence Activities</div>
+  <p class="bt">Identify and document the <strong>logical relationships</strong> (dependencies) between activities. Determine which activities must finish before others can start.</p>
+  <ul class="nl">
+    <li><strong>Mandatory Dependencies</strong> — inherent in the nature of work (cannot code before design is complete)</li>
+    <li><strong>Discretionary Dependencies</strong> — best practices (peer review before delivery)</li>
+    <li><strong>External Dependencies</strong> — outside the project (vendor delivery before integration)</li>
+  </ul>
+
+  <div class="ssub">Step 3 — Estimate Activity Durations</div>
+  <p class="bt">Estimate how long each activity will take using techniques such as:</p>
+  <ul class="nl">
+    <li><strong>Expert Judgment</strong> — based on team experience</li>
+    <li><strong>Analogous Estimating</strong> — based on similar past activities</li>
+    <li><strong>Three-Point Estimating (PERT)</strong> — optimistic, most likely, pessimistic</li>
+    <li><strong>Planning Poker</strong> — Agile estimation technique</li>
+  </ul>
+
+  <div class="ssub">Step 4 — Assign Resources</div>
+  <p class="bt">Assign team members, equipment, and materials to each activity. Check for <strong>resource conflicts and over-allocation</strong>. Balance workloads using resource levelling techniques.</p>
+
+  <div class="ssub">Step 5 — Develop the Schedule Network</div>
+  <p class="bt">Build the <strong>project network diagram</strong> (PDM or ADM) connecting all activities with their dependencies. Calculate the <strong>Critical Path</strong> using forward and backward pass calculations.</p>
+
+  <div class="ssub">Step 6 — Apply Schedule Compression (if needed)</div>
+  <p class="bt">If the initial schedule exceeds the required deadline, apply schedule compression techniques:</p>
+  <ul class="nl">
+    <li><strong>Crashing</strong> — adding resources to critical path activities to reduce duration (increases cost)</li>
+    <li><strong>Fast-tracking</strong> — performing activities in parallel that were originally sequential (increases risk)</li>
+  </ul>
+
+  <div class="ssub">Step 7 — Finalise and Baseline the Schedule</div>
+  <p class="bt">Present the schedule to stakeholders for review and approval. Once approved, the schedule is <strong>baselined</strong> — it becomes the official reference point for measuring progress. Any future changes require formal change control.</p>
+
+  <div class="ibox">
+    <div class="ibox-title">Tools Used for Schedule Development</div>
+    <div class="ibox-body">
+      <p>▸ Microsoft Project — creates Gantt charts, CPM, resource allocation</p>
+      <p>▸ Primavera P6 — used for large, complex projects</p>
+      <p>▸ JIRA — Agile sprint planning and backlog management</p>
+      <p>▸ Smartsheet / Monday.com — collaborative online scheduling</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ Q16 ══════════ -->
+<section class="qblock" id="q16">
+  <div class="q-header">
+    <div class="q-badge"><span>16</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 16 · CO3 · Apply (BT3)</div>
+      <h2 class="q-title">Examine the Common Sources of Risk in IT Projects and Explain Their Impact on Project Success.</h2>
+      <div class="q-tags"><span class="tag">Risk Sources</span><span class="tag">IT Risk</span><span class="tag co">CO3</span><span class="tag bt">BT3</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is Project Risk?</div>
+  <div class="def">A <strong>project risk</strong> is an uncertain event or condition that, if it occurs, has a positive or negative effect on one or more project objectives such as scope, schedule, cost, or quality. In IT projects, risks are especially prevalent due to the complexity, novelty, and pace of technological change.</div>
+
+  <div class="sh"><span>◆</span>Common Sources of Risk in IT Projects</div>
+
+  <div class="ssub">1. Requirement Risks</div>
+  <p class="bt"><strong>Incomplete, unclear, or changing requirements</strong> are the most common source of IT project risk. When requirements are not well-defined, developers build the wrong system, leading to costly rework.</p>
+  <div class="callout"><span class="callout-icon">⚠</span><p><strong>Impact:</strong> Scope creep, rework, budget overrun, schedule delays, customer dissatisfaction.</p></div>
+
+  <div class="ssub">2. Technology Risks</div>
+  <p class="bt">Using <strong>new, unproven, or rapidly changing technologies</strong> introduces significant uncertainty. Technical feasibility issues, lack of expertise, and integration challenges are common.</p>
+  <div class="callout"><span class="callout-icon">⚠</span><p><strong>Impact:</strong> Integration failures, performance issues, security vulnerabilities, project failure.</p></div>
+
+  <div class="ssub">3. Resource Risks</div>
+  <p class="bt"><strong>Loss of key personnel</strong> (key person dependency), skill gaps in the team, unavailability of resources, and high team turnover are major risks in IT projects where specific expertise is critical.</p>
+  <div class="callout"><span class="callout-icon">⚠</span><p><strong>Impact:</strong> Schedule delays, knowledge loss, quality reduction, increased cost to hire replacements.</p></div>
+
+  <div class="ssub">4. Schedule Risks</div>
+  <p class="bt"><strong>Unrealistic timelines</strong>, poor estimation, and dependencies on external parties (vendors, regulatory approvals) can cause schedule risks. IT projects frequently underestimate complexity.</p>
+  <div class="callout"><span class="callout-icon">⚠</span><p><strong>Impact:</strong> Late delivery, rushed testing, reduced quality, stakeholder loss of confidence.</p></div>
+
+  <div class="ssub">5. Budget / Cost Risks</div>
+  <p class="bt"><strong>Poor cost estimation, scope creep, and unexpected expenses</strong> (emergency hardware, additional licenses, overtime) lead to budget overruns. IT projects often face hidden costs.</p>
+  <div class="callout"><span class="callout-icon">⚠</span><p><strong>Impact:</strong> Project cancellation, reduced scope, compromised quality, financial losses.</p></div>
+
+  <div class="ssub">6. Security &amp; Cybersecurity Risks</div>
+  <p class="bt"><strong>Data breaches, hacking, ransomware, and compliance violations</strong> are increasing risks for IT projects. Software with vulnerabilities can expose organisations to legal and financial liability.</p>
+  <div class="callout"><span class="callout-icon">⚠</span><p><strong>Impact:</strong> Data loss, regulatory fines, reputational damage, project shutdown.</p></div>
+
+  <div class="ssub">7. Vendor / Third-Party Risks</div>
+  <p class="bt"><strong>Dependency on external vendors</strong> for critical components, APIs, or services introduces risk. Vendor failure, price changes, or contract disputes can halt the project.</p>
+  <div class="callout"><span class="callout-icon">⚠</span><p><strong>Impact:</strong> Integration delays, cost increases, project dependency bottlenecks.</p></div>
+
+  <div class="ssub">8. Organisational / Political Risks</div>
+  <p class="bt"><strong>Lack of management support, organisational resistance to change, power struggles, and competing priorities</strong> are often underestimated risks that can sink an IT project.</p>
+  <div class="callout"><span class="callout-icon">⚠</span><p><strong>Impact:</strong> Project cancellation, lack of resources, poor adoption of delivered solution.</p></div>
+
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Risk Source</th><th>Probability</th><th>Impact</th><th>Project Objective Affected</th></tr></thead>
+      <tbody>
+        <tr><td>Changing Requirements</td><td>High</td><td>High</td><td>Scope, Cost, Time</td></tr>
+        <tr><td>Technology Failure</td><td>Medium</td><td>Very High</td><td>Scope, Quality</td></tr>
+        <tr><td>Key Person Leaves</td><td>Medium</td><td>High</td><td>Time, Quality</td></tr>
+        <tr><td>Budget Overrun</td><td>High</td><td>High</td><td>Cost, Scope</td></tr>
+        <tr><td>Cybersecurity Breach</td><td>Low-Medium</td><td>Very High</td><td>All objectives</td></tr>
+        <tr><td>Vendor Delay</td><td>Medium</td><td>Medium</td><td>Time, Cost</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════ Q17 ══════════ -->
+<section class="qblock" id="q17">
+  <div class="q-header">
+    <div class="q-badge"><span>17</span></div>
+    <div class="q-meta">
+      <div class="q-num">Question 17 · CO3 · Apply (BT3)</div>
+      <h2 class="q-title">Explain How Risk Management Planning Helps in Managing Risks in a Software Project.</h2>
+      <div class="q-tags"><span class="tag">Risk Management</span><span class="tag">Planning</span><span class="tag co">CO3</span><span class="tag bt">BT3</span></div>
+    </div>
+  </div>
+
+  <div class="sh"><span>◆</span>What is Risk Management Planning?</div>
+  <div class="def"><strong>Risk Management Planning</strong> is the process of deciding how to approach, plan, and execute risk management activities for a project. It results in a <em>Risk Management Plan</em> — a document that describes how risk processes will be structured and performed throughout the project lifecycle.</div>
+
+  <div class="sh"><span>◆</span>Risk Management Process (6 Steps)</div>
+
+  <div class="ssub">Step 1 — Plan Risk Management</div>
+  <p class="bt">Define the <strong>methodology, roles, budget, timing, and categories</strong> for all risk management activities. Create the Risk Management Plan document. This ensures everyone agrees on how risks will be handled.</p>
+
+  <div class="ssub">Step 2 — Identify Risks</div>
+  <p class="bt">Systematically identify <strong>all possible risks</strong> that could affect the project. Techniques used:</p>
+  <ul class="nl">
+    <li><strong>Brainstorming</strong> — team sessions to identify potential risks</li>
+    <li><strong>Delphi Technique</strong> — anonymous expert consensus building</li>
+    <li><strong>SWOT Analysis</strong> — Strengths, Weaknesses, Opportunities, Threats</li>
+    <li><strong>Checklist Analysis</strong> — reviewing risks from past similar projects</li>
+    <li><strong>Risk Register</strong> — maintained document listing all identified risks</li>
+  </ul>
+
+  <div class="ssub">Step 3 — Perform Qualitative Risk Analysis</div>
+  <p class="bt"><strong>Prioritise risks</strong> by assessing the probability of occurrence and potential impact (on a scale of Low/Medium/High). Use a Probability-Impact Matrix to categorise risks and determine which require the most attention.</p>
+  <div class="tw">
+    <table class="nt">
+      <thead><tr><th>Probability \ Impact</th><th>Low</th><th>Medium</th><th>High</th></tr></thead>
+      <tbody>
+        <tr><td>High</td><td style="background:rgba(255,200,0,0.2)">Medium</td><td style="background:rgba(240,80,80,0.2)">High</td><td style="background:rgba(240,80,80,0.3)">Critical</td></tr>
+        <tr><td>Medium</td><td style="background:rgba(100,200,100,0.2)">Low</td><td style="background:rgba(255,200,0,0.2)">Medium</td><td style="background:rgba(240,80,80,0.2)">High</td></tr>
+        <tr><td>Low</td><td style="background:rgba(100,200,100,0.2)">Negligible</td><td style="background:rgba(100,200,100,0.2)">Low</td><td style="background:rgba(255,200,0,0.2)">Medium</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="ssub">Step 4 — Perform Quantitative Risk Analysis</div>
+  <p class="bt">For high-priority risks, perform <strong>numerical analysis</strong> to quantify their potential impact on project objectives. Techniques:</p>
+  <ul class="nl">
+    <li><strong>Expected Monetary Value (EMV)</strong> = Probability × Impact ($). Used in decision trees.</li>
+    <li><strong>Monte Carlo Simulation</strong> — runs thousands of project simulations to model uncertainty</li>
+    <li><strong>Sensitivity Analysis</strong> — determines which risks have the greatest overall impact</li>
+  </ul>
+
+  <div class="ssub">Step 5 — Plan Risk Responses</div>
+  <p class="bt">Develop <strong>strategies to address each risk</strong>. For negative risks (threats):</p>
+  <ul class="nl">
+    <li><strong>Avoid</strong> — eliminate the risk entirely (change the plan to avoid it)</li>
+    <li><strong>Transfer</strong> — shift the risk to a third party (insurance, outsourcing)</li>
+    <li><strong>Mitigate</strong> — reduce the probability or impact (more testing, prototyping)</li>
+    <li><strong>Accept</strong> — acknowledge the risk and prepare a contingency plan</li>
+  </ul>
+  <p class="bt">For positive risks (opportunities):</p>
+  <ul class="nl">
+    <li><strong>Exploit</strong> — ensure the opportunity definitely happens</li>
+    <li><strong>Enhance</strong> — increase the probability of the opportunity</li>
+    <li><strong>Share</strong> — partner with another party to capture the opportunity</li>
+  </ul>
+
+  <div class="ssub">Step 6 — Monitor and Control Risks</div>
+  <p class="bt"><strong>Track identified risks, identify new risks</strong>, evaluate risk process effectiveness, and execute contingency plans as needed throughout the project lifecycle. Risk audits and risk reassessments are conducted regularly.</p>
+
+  <div class="sh"><span>◆</span>How Risk Management Planning Helps</div>
+  <div class="ibox">
+    <div class="ibox-title">Benefits of Risk Management Planning</div>
+    <div class="ibox-body">
+      <p>▸ <strong>Proactive</strong> — identifies problems before they occur, not after</p>
+      <p>▸ <strong>Reduces Surprises</strong> — fewer unexpected crises derail the project</p>
+      <p>▸ <strong>Better Decision Making</strong> — data-driven risk information supports informed choices</p>
+      <p>▸ <strong>Stakeholder Confidence</strong> — stakeholders trust a team that has anticipated risks</p>
+      <p>▸ <strong>Cost Savings</strong> — preventing a risk is almost always cheaper than recovering from it</p>
+      <p>▸ <strong>Improved Outcomes</strong> — projects with formal risk management have higher success rates</p>
+    </div>
+  </div>
+
+  <div class="note-box"><span style="font-size:16px;flex-shrink:0">💡</span><p><strong>Example:</strong> In a software migration project, risk management planning identified the risk of "data loss during migration" (High probability, Critical impact). Response: Mitigation — full backup before migration, rollback plan, dry-run migration on test data. Result: Migration completed successfully with zero data loss.</p></div>
+</section>
+
+</div><!-- /content -->
+</main>
+
+<!-- Scroll to top -->
+<button id="stt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+// ── Progress ──
+function upd() {
+  const s = window.scrollY;
+  const t = document.body.scrollHeight - window.innerHeight;
+  const p = Math.round((s/t)*100);
+  document.getElementById('pf').style.width = p+'%';
+  document.getElementById('pct').textContent = p+'%';
+  document.getElementById('rline').style.width = p+'%';
+  const btn = document.getElementById('stt');
+  s > 400 ? btn.classList.add('show') : btn.classList.remove('show');
+}
+window.addEventListener('scroll', upd, {passive:true});
+
+// ── Reveal on scroll ──
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('vis'); });
+}, {threshold:0.05});
+document.querySelectorAll('.qblock').forEach(el => obs.observe(el));
+
+// ── Active nav ──
+const secs = document.querySelectorAll('.qblock');
+const links = document.querySelectorAll('.sb-link');
+const io2 = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      links.forEach(l => l.classList.remove('active'));
+      const a = document.querySelector(`.sb-link[href="#${e.target.id}"]`);
+      if(a){ a.classList.add('active'); a.scrollIntoView({block:'nearest'}); }
+    }
+  });
+},{rootMargin:'-25% 0px -65% 0px'});
+secs.forEach(s => io2.observe(s));
+
+// ── Search ──
+function filterNav(v) {
+  const q = v.toLowerCase();
+  document.querySelectorAll('.sb-link').forEach(l => {
+    l.style.display = l.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+  });
+}
+
+// ── Mobile ──
+function toggleSb() { document.getElementById('sidebar').classList.toggle('open'); }
+function closeSb() { if(window.innerWidth<920) document.getElementById('sidebar').classList.remove('open'); }
+document.addEventListener('click', e => {
+  const sb = document.getElementById('sidebar');
+  const btn = document.getElementById('togBtn');
+  if(window.innerWidth<920 && !sb.contains(e.target) && e.target!==btn) sb.classList.remove('open');
+});
+</script>
+</body>
+</html>
